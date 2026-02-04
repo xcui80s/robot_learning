@@ -4,6 +4,7 @@
 
 🚀 **Perfect for ages 10-14** - Learn AI concepts through fun, interactive lessons!
 
+<img width="642" height="485" alt="image" src="https://github.com/user-attachments/assets/1a92eb09-dd2e-4ff5-b08e-60a29f044b75" />
 ---
 
 ## 🎯 What You'll Learn

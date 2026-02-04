@@ -193,7 +193,23 @@ class QLearningAgent:
         else:
             # Look at all possible moves from the next position
             # Pick the best one (highest Q-value)
-            future_value = np.max(self.q_table[next_state])
+            best_action_next = int(np.argmax(self.q_table[next_state]))
+            future_value = self.q_table[next_state, best_action_next]
+            
+            # Check if the best action from next_state is the reverse of the action we just took
+            # This prevents the agent from learning oscillatory behavior (going back and forth)
+            # UP (0) <-> DOWN (1) are reverses, LEFT (2) <-> RIGHT (3) are reverses
+            reverse_actions = {
+                0: 1,  # UP <-> DOWN
+                1: 0,  # DOWN <-> UP
+                2: 3,  # LEFT <-> RIGHT
+                3: 2,  # RIGHT <-> LEFT
+            }
+            
+            # If the best action from next_state would take us back to where we came from,
+            # ignore the future value to prevent oscillating
+            if reverse_actions.get(action) == best_action_next:
+                future_value = 0
         
         # Step 3: The Q-learning formula!
         # This calculates how good this move REALLY was

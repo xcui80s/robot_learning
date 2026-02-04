@@ -93,7 +93,7 @@ def main():
             done = terminated or truncated
             
             # Visualize
-            viz.update(info, reward, q_values, state)
+            viz.update(info, reward, q_values, q_values, state, action, False)
             
             total_reward += reward
             state = next_state

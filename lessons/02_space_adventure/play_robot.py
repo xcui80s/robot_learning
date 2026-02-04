@@ -79,7 +79,7 @@ def main():
             done = terminated or truncated
             
             # Visualize - pass same Q-values for before and after (no learning in play mode)
-            viz.update(info, reward, q_values, q_values, state, action)
+            viz.update(info, reward, q_values, q_values, state, action, False)
             
             total_reward += reward
             state = next_state

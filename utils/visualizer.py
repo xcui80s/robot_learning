@@ -846,7 +846,7 @@ if __name__ == "__main__":
         # Update display
         viz.set_episode(1)
         viz.set_epsilon(0.5)
-        viz.update(env_info, reward, q_values, q_values, step, step % 4)
+        viz.update(env_info, reward, q_values, q_values, step, step % 4, False)
         
         # Check if we should quit
         if step == 0:

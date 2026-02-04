@@ -1,0 +1,15 @@
+name: robot_learning
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - numpy
+  - matplotlib
+  - pip:
+    - gymnasium>=0.29.0
+    - pygame>=2.5.0
+    - colorama>=0.4.6
+    - tqdm>=4.66.0
+    - json5>=0.9.14

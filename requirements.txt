@@ -1,0 +1,23 @@
+# Robot Learning - Space Explorer
+# Dependencies for the kid-friendly reinforcement learning project
+
+# Core RL library (OpenAI Gym successor)
+gymnasium>=0.29.0
+
+# Math library for Q-learning calculations
+numpy>=1.24.0
+
+# Fun visualizations - makes the robot move and look cool!
+pygame>=2.5.0
+
+# Charts and graphs to show learning progress
+matplotlib>=3.7.0
+
+# Colored text in the terminal - makes it more fun!
+colorama>=0.4.6
+
+# Progress bars - so you can see the robot learning
+tqdm>=4.66.0
+
+# For saving the robot's brain (Q-table)
+json5>=0.9.14

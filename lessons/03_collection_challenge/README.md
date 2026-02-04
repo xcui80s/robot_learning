@@ -97,6 +97,8 @@ Watch your robot:
 | Reach goal (incomplete) | +10 | Partial credit |
 | Hit asteroid | -10 | Ouch! |
 | Each step | -1 | Encourages efficiency |
+| Move closer to goal | +5 | Encourages efficient path! |
+| Move away from goal | -5 | Penalizes inefficient moves |
 
 **Perfect Mission**: Collect both stars (+10+10+50) + Reach goal (+100) = **170 points!**
 

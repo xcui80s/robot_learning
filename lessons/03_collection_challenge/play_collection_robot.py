@@ -39,25 +39,31 @@ def main():
     print(f"{Fore.GREEN}🧠 Loading collection robot brain...")
     agent = QLearningAgent.load(brain_path)
     
-    # Create the environment
+    # Create the environment from saved settings or use defaults
     print(f"{Fore.GREEN}🎯 Creating collection challenge environment...")
-    env = CollectionChallengeEnv(
-        grid_size=5,
-        fixed_layout=True,
-        collection_mode=True
-    )
+    if agent.environment_settings:
+        print(f"{Fore.CYAN}📝 Using saved environment settings...")
+        env = CollectionChallengeEnv.from_settings(agent.environment_settings)
+    else:
+        print(f"{Fore.YELLOW}⚠️ Using default environment settings...")
+        env = CollectionChallengeEnv(
+            grid_size=5,
+            fixed_layout=True,
+            collection_mode=True
+        )
     
     # Show the layout and strategy
-    print(f"\n{Fore.YELLOW}🗺️ Fixed Layout:{Style.RESET_ALL}")
+    print(f"\n{Fore.YELLOW}🗺️ Environment Layout:{Style.RESET_ALL}")
+    print(f"  Grid size: {env.grid_size}x{env.grid_size}")
     print(f"  Energy positions: {sorted(env.fixed_energy_positions)}")
     print(f"  Asteroid positions: {sorted(env.fixed_asteroid_positions)}")
     print(f"  Goal position: {env.goal_pos}")
     print(f"  Strategy: {agent.strategy.upper()}")
     print(f"\n{Fore.CYAN}Mission: Collect BOTH energy stars, then reach the goal!\n")
     
-    # Create visualizer
+    # Create visualizer with correct grid size
     print(f"{Fore.GREEN}🎨 Starting visualizer...\n")
-    viz = SpaceVisualizer(grid_size=5, fps=5)  # Uses default cell_size=100 for larger display
+    viz = SpaceVisualizer(grid_size=env.grid_size, fps=5)  # Uses saved grid_size
     
     # Play some episodes
     n_episodes = 5

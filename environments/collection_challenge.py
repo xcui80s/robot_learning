@@ -94,6 +94,45 @@ class CollectionChallengeEnv(SpaceStationEnv):
         self.total_energy_count = len(self.fixed_energy_positions)
         self.initial_energy_positions = set()  # Will be set in reset
         
+    def get_settings(self) -> dict:
+        """
+        📊 Get current environment settings as a dictionary.
+        
+        Returns:
+            Dictionary with grid_size, goal_pos, energy_positions, asteroid_positions, collection_mode
+        """
+        return {
+            'grid_size': self.grid_size,
+            'goal_pos': list(self.goal_pos),
+            'energy_positions': [list(pos) for pos in self.fixed_energy_positions],
+            'asteroid_positions': [list(pos) for pos in self.fixed_asteroid_positions],
+            'collection_mode': self.collection_mode
+        }
+    
+    @classmethod
+    def from_settings(cls, settings: dict) -> 'CollectionChallengeEnv':
+        """
+        🎯 Create a CollectionChallengeEnv from saved settings.
+        
+        Args:
+            settings: Dictionary containing environment configuration:
+                - grid_size: Size of the grid
+                - goal_pos: Goal position [row, col]
+                - energy_positions: List of energy positions [[r1, c1], [r2, c2], ...]
+                - asteroid_positions: List of asteroid positions [[r1, c1], [r2, c2], ...]
+                - collection_mode: Whether collection mode is enabled
+        
+        Returns:
+            CollectionChallengeEnv configured with saved settings
+        """
+        return cls(
+            grid_size=settings.get('grid_size', 5),
+            fixed_layout=True,
+            collection_mode=settings.get('collection_mode', True),
+            custom_energy_positions=[tuple(pos) for pos in settings.get('energy_positions', [])],
+            custom_asteroid_positions=[tuple(pos) for pos in settings.get('asteroid_positions', [])]
+        )
+    
     def _place_objects(self):
         """
         📍 Place objects in fixed positions (instead of random).

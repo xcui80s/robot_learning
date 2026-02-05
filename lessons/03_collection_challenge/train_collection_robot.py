@@ -378,7 +378,10 @@ class CollectionTrainer:
         
         pbar.close()
         
-        # Save agent
+        # Save environment settings in the agent before saving
+        self.agent.environment_settings = self.env.get_settings()
+        
+        # Save agent (now includes environment settings)
         self.agent.save(save_path)
         
         # Print summary

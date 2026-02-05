@@ -93,6 +93,9 @@ class QLearningAgent:
         self.total_reward = 0
         self.episodes_completed = 0
         
+        # Store environment settings (for environment recreation during loading)
+        self.environment_settings = None
+        
     def choose_action(self, state: int, training: bool = True) -> Tuple[int, bool]:
         """
         🎲 Choose what move to make!
@@ -288,6 +291,7 @@ class QLearningAgent:
             'epsilon_decay': self.epsilon_decay,
             'epsilon_min': self.epsilon_min,
             'strategy': self.strategy,
+            'environment_settings': getattr(self, 'environment_settings', None),
             'q_table': self.q_table.tolist(),
             'total_reward': self.total_reward,
             'episodes_completed': self.episodes_completed
@@ -331,9 +335,19 @@ class QLearningAgent:
         agent.total_reward = data.get('total_reward', 0)
         agent.episodes_completed = data.get('episodes_completed', 0)
         
+        # Load environment settings (for environment recreation)
+        agent.environment_settings = data.get('environment_settings')
+        
         print(f"🧠 Robot brain loaded from {filepath}!")
         print(f"   Knowledge: {agent.n_states} positions × {agent.n_actions} actions")
         print(f"   Strategy: {agent.strategy.upper()}")
+        
+        # Print environment settings if available
+        if agent.environment_settings:
+            print(f"   Grid size: {agent.environment_settings.get('grid_size', 5)}x{agent.environment_settings.get('grid_size', 5)}")
+            print(f"   Energy positions: {sorted(agent.environment_settings.get('energy_positions', []))}")
+            print(f"   Asteroid positions: {sorted(agent.environment_settings.get('asteroid_positions', []))}")
+            print(f"   Goal position: {agent.environment_settings.get('goal_pos')}")
         
         return agent
     

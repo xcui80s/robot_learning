@@ -111,23 +111,118 @@ def train_collection_robot():
         STRATEGY = 'qlearning'
         print(f"  ✓ Using Q-Learning strategy")
     
+    # Choose number of episodes
+    print(f"\n{Fore.CYAN}🎮 Training Episodes:{Style.RESET_ALL}")
+    print(f"  Default: {N_EPISODES} episodes")
+    episodes_input = input("  Enter number of episodes (10-1000, default=400): ").strip()
+    if episodes_input:
+        N_EPISODES = int(episodes_input)
+        N_EPISODES = max(10, min(1000, N_EPISODES))  # Clamp to 10-1000
+    print(f"  ✓ Training for {N_EPISODES} episodes")
+    
+    # Choose layout type
+    print(f"\n{Fore.CYAN}🗺️ Choose Layout Type:{Style.RESET_ALL}")
+    print(f"  1. Fixed Layout - Same positions every time")
+    print(f"  2. Random Layout - New positions each training run")
+    layout_choice = input("  Enter choice (1 or 2, default=1): ").strip()
+    
+    # Initialize variables for layout configuration
+    LAYOUT_TYPE = 'fixed'
+    settings = None
+    goal_pos = None
+    NUM_ENERGY = 2
+    NUM_ASTEROIDS = 2
+    actual_grid_size = GRID_SIZE
+    
+    if layout_choice == '2':
+        # Get configuration for random layout
+        print(f"\n{Fore.YELLOW}🎛️ Random Layout Configuration:{Style.RESET_ALL}")
+        
+        # Grid size
+        grid_input = input("  Grid size (3-10, default=5): ").strip()
+        if grid_input:
+            actual_grid_size = int(grid_input)
+            actual_grid_size = max(3, min(10, actual_grid_size))  # Clamp to 3-10
+        
+        # Number of energy stars
+        energy_input = input("  Number of energy stars (1-5, default=2): ").strip()
+        if energy_input:
+            NUM_ENERGY = int(energy_input)
+            NUM_ENERGY = max(1, min(5, NUM_ENERGY))  # Clamp to 1-5
+        
+        # Number of asteroids
+        asteroid_input = input("  Number of asteroids (1-6, default=2): ").strip()
+        if asteroid_input:
+            NUM_ASTEROIDS = int(asteroid_input)
+            NUM_ASTEROIDS = max(1, min(6, NUM_ASTEROIDS))  # Clamp to 1-6
+        
+        # Goal position
+        print(f"  Goal position (row, col), e.g., '4,4' for bottom-right")
+        print(f"  Or press ENTER for default (bottom-right corner)")
+        goal_input = input("  Goal position: ").strip()
+        
+        if goal_input:
+            try:
+                goal_parts = goal_input.split(',')
+                goal_row = int(goal_parts[0].strip())
+                goal_col = int(goal_parts[1].strip())
+                goal_row = max(0, min(actual_grid_size - 1, goal_row))  # Clamp
+                goal_col = max(0, min(actual_grid_size - 1, goal_col))  # Clamp
+                goal_pos = (goal_row, goal_col)
+            except:
+                goal_pos = (actual_grid_size - 1, actual_grid_size - 1)  # Default
+        else:
+            goal_pos = (actual_grid_size - 1, actual_grid_size - 1)  # Default
+        
+        # Generate random settings
+        settings = CollectionChallengeEnv.generate_random_settings(
+            grid_size=actual_grid_size,
+            num_energy=NUM_ENERGY,
+            num_asteroids=NUM_ASTEROIDS,
+            goal_pos=goal_pos
+        )
+        
+        LAYOUT_TYPE = 'random'
+        print(f"\n  ✓ Random Layout Generated:")
+        print(f"    Grid: {actual_grid_size}x{actual_grid_size}")
+        print(f"    Energy: {NUM_ENERGY} at {sorted(settings['energy_positions'])}")
+        print(f"    Asteroids: {NUM_ASTEROIDS} at {sorted(settings['asteroid_positions'])}")
+        print(f"    Goal: {list(goal_pos)}")
+    else:
+        LAYOUT_TYPE = 'fixed'
+        actual_grid_size = GRID_SIZE
+        print(f"  ✓ Using Fixed Layout")
+    
     print(f"\n{Fore.CYAN}⚙️  Training Configuration:{Style.RESET_ALL}")
-    print(f"  Grid size: {GRID_SIZE}x{GRID_SIZE}")
+    print(f"  Grid size: {actual_grid_size}x{actual_grid_size}")
     print(f"  Episodes: {N_EPISODES}")
     print(f"  Learning rate: {LEARNING_RATE}")
     print(f"  Strategy: {STRATEGY.upper()}")
-    print(f"  Mode: Fixed layout + Collection challenge")
+    print(f"  Layout: {LAYOUT_TYPE.title()}")
+    if LAYOUT_TYPE == 'random':
+        print(f"  Energy count: {NUM_ENERGY}")
+        print(f"  Asteroid count: {NUM_ASTEROIDS}")
+        print(f"  Goal position: {list(goal_pos)}")
     
     # Create the collection environment
     print(f"\n{Fore.GREEN}🎯 Creating Collection Challenge environment...")
-    env = CollectionChallengeEnv(
-        grid_size=GRID_SIZE,
-        fixed_layout=True,
-        collection_mode=True
-    )
+    
+    if LAYOUT_TYPE == 'random':
+        # Use random settings
+        env = CollectionChallengeEnv.from_settings(settings)
+        print(f"  Created random layout environment")
+    else:
+        # Use fixed layout
+        env = CollectionChallengeEnv(
+            grid_size=GRID_SIZE,
+            fixed_layout=True,
+            collection_mode=True
+        )
+        print(f"  Created fixed layout environment")
     
     # Show the layout
-    print(f"\n{Fore.YELLOW}🗺️ Fixed Layout:{Style.RESET_ALL}")
+    layout_title = "🗺️ Random Layout" if LAYOUT_TYPE == 'random' else "🗺️ Fixed Layout"
+    print(f"\n{Fore.YELLOW}{layout_title}:{Style.RESET_ALL}")
     print(f"  Energy positions: {sorted(env.fixed_energy_positions)}")
     print(f"  Asteroid positions: {sorted(env.fixed_asteroid_positions)}")
     print(f"  Goal position: {env.goal_pos}")

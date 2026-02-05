@@ -110,6 +110,60 @@ class CollectionChallengeEnv(SpaceStationEnv):
         }
     
     @classmethod
+    def generate_random_settings(
+        cls, 
+        grid_size: int = 5, 
+        num_energy: int = 2, 
+        num_asteroids: int = 2,
+        goal_pos: Optional[Tuple[int, int]] = None
+    ) -> dict:
+        """
+        🎲 Generate random game settings.
+        
+        Args:
+            grid_size: Size of the grid
+            num_energy: Number of energy stars to place
+            num_asteroids: Number of asteroids to place
+            goal_pos: Goal position (row, col), if None uses bottom-right
+        
+        Returns:
+            Dictionary with all game settings
+        """
+        import random
+        
+        # Use bottom-right if goal not specified
+        if goal_pos is None:
+            goal_pos = (grid_size - 1, grid_size - 1)
+        
+        start_pos = (0, 0)
+        
+        # Available positions (excluding start, goal, and ensuring space)
+        all_positions = [
+            (r, c) for r in range(grid_size) 
+            for c in range(grid_size)
+            if (r, c) not in [start_pos, goal_pos]
+        ]
+        
+        # Validate requested counts
+        max_items = len(all_positions)
+        num_energy = min(num_energy, max_items // 2)
+        num_asteroids = min(num_asteroids, max_items - num_energy)
+        
+        random.shuffle(all_positions)
+        
+        # Generate positions
+        energy_positions = all_positions[:num_energy]
+        asteroid_positions = all_positions[num_energy:num_energy + num_asteroids]
+        
+        return {
+            'grid_size': grid_size,
+            'goal_pos': list(goal_pos),
+            'energy_positions': [list(pos) for pos in energy_positions],
+            'asteroid_positions': [list(pos) for pos in asteroid_positions],
+            'collection_mode': True
+        }
+    
+    @classmethod
     def from_settings(cls, settings: dict) -> 'CollectionChallengeEnv':
         """
         🎯 Create a CollectionChallengeEnv from saved settings.

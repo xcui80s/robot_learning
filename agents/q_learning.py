@@ -150,7 +150,7 @@ class QLearningAgent:
             
         return int(action), is_exploration
     
-    def learn(self, state: int, action: int, reward: float, next_state: int, done: bool):
+    def learn(self, state: int, action: int, reward: float, next_state: int, done: bool, next_action: int = None):
         """
         🎓 LEARN FROM EXPERIENCE!
         
@@ -160,22 +160,15 @@ class QLearningAgent:
         - What happened (reward)
         - Where it ended up (next_state)
         - Is the game over? (done)
+        - For SARSA: what action will be taken from next_state (next_action)
         
-        THE Q-LEARNING FORMULA:
+        THE Q-LEARNING FORMULA (Off-policy):
         ======================
-        Think of it like updating a score:
-        
-        New Score = Old Score + Learning Rate × (Reward + Future Value - Old Score)
-        
-        Or in math:
         Q(state, action) = Q(state, action) + α × (reward + γ × max(Q(next_state)) - Q(state, action))
         
-        WHERE:
-        - Q(state, action) = How good was this move? (starts at 0)
-        - α (alpha) = Learning rate (how fast we learn)
-        - reward = Points we got right now
-        - γ (gamma) = Discount factor (how much we care about future rewards)
-        - max(Q(next_state)) = Best possible move from the NEW position
+        THE SARSA FORMULA (On-policy):
+        ======================
+        Q(state, action) = Q(state, action) + α × (reward + γ × Q(next_state, next_action) - Q(state, action))
         
         Args:
             state: Where we were
@@ -183,6 +176,7 @@ class QLearningAgent:
             reward: Points we got
             next_state: Where we ended up
             done: Is the episode finished?
+            next_action: Action that will be taken from next_state (required for SARSA, ignored for Q-learning)
         """
         # Step 1: Remember the old score for this move
         old_value = self.q_table[state, action]
@@ -196,10 +190,10 @@ class QLearningAgent:
         else:
             # Choose future value based on learning strategy
             if self.strategy == 'sarsa':
-                # 🎯 SARSA: Use the action actually taken from next_state (on-policy)
+                # 🎯 SARSA: Use the passed next_action for on-policy learning
                 # This makes SARSA more conservative - it learns the actual policy including exploration
-                action_next, _ = self.choose_action(next_state, training=True)
-                future_value = self.q_table[next_state, action_next]
+                # next_action must be the action that will be/was actually taken from next_state
+                future_value = self.q_table[next_state, next_action]
             else:
                 # 🎯 Q-LEARNING: Use the best action from next_state (off-policy)
                 # This makes Q-learning more aggressive - it always learns the optimal path

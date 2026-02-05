@@ -165,19 +165,24 @@ class RobotTrainer:
                 self.explainer.explain_episode_start(episode, self.agent.epsilon)
             
             # Run one episode
+            # Choose initial action (SARSA starts with an action)
+            action, is_exploration = self.agent.choose_action(state, training=True)
+            
             while not done and steps < max_steps_per_episode:
                 # Get Q-values BEFORE learning
                 old_q_values = self.agent.get_q_values(state).copy()
-                
-                # Choose action
-                action, is_exploration = self.agent.choose_action(state, training=True)
                 
                 # Take action in environment
                 next_state, reward, terminated, truncated, info = self.env.step(action)
                 done = terminated or truncated
                 
+                # Choose next_action from next_state
+                next_action, next_is_exploration = self.agent.choose_action(next_state, training=True)
+                
                 # Learn from this experience (updates Q-values)
-                self.agent.learn(state, action, reward, next_state, terminated)
+                # For SARSA: uses next_action to maintain trajectory consistency
+                # For Q-learning: next_action is ignored, uses max(Q)
+                self.agent.learn(state, action, reward, next_state, terminated, next_action)
                 
                 # Get Q-values AFTER learning
                 new_q_values = self.agent.get_q_values(state).copy()
@@ -198,7 +203,11 @@ class RobotTrainer:
                 
                 # Update tracking
                 total_reward += reward
+                
+                # SARSA: Set current action = next_action for next iteration
                 state = next_state
+                action = next_action
+                is_exploration = next_is_exploration
                 steps += 1
             
             # Episode complete

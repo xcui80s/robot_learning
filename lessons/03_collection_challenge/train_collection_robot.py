@@ -307,19 +307,24 @@ class CollectionTrainer:
                 self.visualizer.set_epsilon(self.agent.epsilon)
             
             # Episode loop
+            # Choose initial action (SARSA starts with an action)
+            action, is_exploration = self.agent.choose_action(state, training=True)
+            
             while not done and steps < 100:
                 # Get Q-values BEFORE learning
                 old_q_values = self.agent.get_q_values(state).copy()
-                
-                # Choose action
-                action, is_exploration = self.agent.choose_action(state, training=True)
                 
                 # Take action
                 next_state, reward, terminated, truncated, info = self.env.step(action)
                 done = terminated or truncated
                 
+                # Choose next_action from next_state
+                next_action, next_is_exploration = self.agent.choose_action(next_state, training=True)
+                
                 # Learn (updates Q-values)
-                self.agent.learn(state, action, reward, next_state, terminated)
+                # For SARSA: uses next_action to maintain trajectory consistency
+                # For Q-learning: next_action is ignored, uses max(Q)
+                self.agent.learn(state, action, reward, next_state, terminated, next_action)
                 
                 # Get Q-values AFTER learning
                 new_q_values = self.agent.get_q_values(state).copy()
@@ -330,7 +335,11 @@ class CollectionTrainer:
                 
                 # Track progress
                 total_reward += reward
+                
+                # SARSA: Set current action = next_action for next iteration
                 state = next_state
+                action = next_action
+                is_exploration = next_is_exploration
                 steps += 1
                 
                 # Check if collected all

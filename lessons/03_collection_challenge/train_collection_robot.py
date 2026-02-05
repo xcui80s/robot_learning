@@ -98,10 +98,24 @@ def train_collection_robot():
     N_EPISODES = 400  # More episodes for this harder challenge!
     LEARNING_RATE = 0.1
     
+    # Choose learning strategy
+    print(f"\n{Fore.CYAN}🎯 Choose Learning Strategy:{Style.RESET_ALL}")
+    print(f"  1. Q-Learning (off-policy) - Faster, more aggressive")
+    print(f"  2. SARSA (on-policy) - Safer, more conservative")
+    strategy_choice = input("  Enter choice (1 or 2, default=1): ").strip()
+    
+    if strategy_choice == '2':
+        STRATEGY = 'sarsa'
+        print(f"  ✓ Using SARSA strategy")
+    else:
+        STRATEGY = 'qlearning'
+        print(f"  ✓ Using Q-Learning strategy")
+    
     print(f"\n{Fore.CYAN}⚙️  Training Configuration:{Style.RESET_ALL}")
     print(f"  Grid size: {GRID_SIZE}x{GRID_SIZE}")
     print(f"  Episodes: {N_EPISODES}")
     print(f"  Learning rate: {LEARNING_RATE}")
+    print(f"  Strategy: {STRATEGY.upper()}")
     print(f"  Mode: Fixed layout + Collection challenge")
     
     # Create the collection environment
@@ -128,6 +142,7 @@ def train_collection_robot():
         use_visualizer=True,
         explain_mode='smart',
         fps=10,
+        strategy=STRATEGY,
     )
     
     print(f"{Fore.GREEN}✅ Ready to train!\n")
@@ -219,13 +234,14 @@ class CollectionTrainer:
     Modified to work with CollectionChallengeEnv and track collection progress.
     """
     
-    def __init__(self, env, use_visualizer=True, explain_mode='smart', fps=10):
+    def __init__(self, env, use_visualizer=True, explain_mode='smart', fps=10, strategy='qlearning'):
         self.env = env
         self.use_visualizer = use_visualizer
         self.explain_mode = explain_mode
         self.fps = fps
+        self.strategy = strategy
         
-        # Create agent
+        # Create agent with chosen strategy
         n_states = env.grid_size * env.grid_size
         n_actions = 4
         
@@ -236,6 +252,7 @@ class CollectionTrainer:
             epsilon=1.0,
             epsilon_min=0.01,
             epsilon_decay=0.995,
+            strategy=strategy,
         )
         
         # Create visualizer
@@ -270,6 +287,7 @@ class CollectionTrainer:
         print(f"{Fore.GREEN}🚀 Starting Collection Challenge Training!{Style.RESET_ALL}")
         print(f"   Episodes: {n_episodes}")
         print(f"   Grid: {self.env.grid_size}x{self.env.grid_size} (FIXED LAYOUT)")
+        print(f"   Strategy: {self.strategy.upper()}")
         print(f"   Energy to collect: {self.env.total_energy_count}\n")
         
         # Training loop

@@ -47,11 +47,12 @@ def main():
         collection_mode=True
     )
     
-    # Show the layout
+    # Show the layout and strategy
     print(f"\n{Fore.YELLOW}🗺️ Fixed Layout:{Style.RESET_ALL}")
     print(f"  Energy positions: {sorted(env.fixed_energy_positions)}")
     print(f"  Asteroid positions: {sorted(env.fixed_asteroid_positions)}")
     print(f"  Goal position: {env.goal_pos}")
+    print(f"  Strategy: {agent.strategy.upper()}")
     print(f"\n{Fore.CYAN}Mission: Collect BOTH energy stars, then reach the goal!\n")
     
     # Create visualizer

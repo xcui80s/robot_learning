@@ -58,6 +58,7 @@ class QLearningAgent:
         epsilon: float = 1.0,           # How much does it explore vs use what it knows?
         epsilon_decay: float = 0.995,   # Does it explore less over time?
         epsilon_min: float = 0.01,      # Minimum exploration (never stop completely)
+        strategy: str = 'qlearning',    # Learning strategy: 'qlearning' or 'sarsa'
     ):
         """
         🎓 Create a new robot brain!
@@ -70,6 +71,7 @@ class QLearningAgent:
             epsilon: Chance of exploring vs using knowledge (1.0 = explore everything)
             epsilon_decay: How fast we stop exploring (0.995 = slow transition)
             epsilon_min: Never stop exploring completely (0.01 = 1% random moves)
+            strategy: Learning algorithm - 'qlearning' (off-policy) or 'sarsa' (on-policy)
         """
         self.n_states = n_states
         self.n_actions = n_actions
@@ -78,6 +80,7 @@ class QLearningAgent:
         self.epsilon = epsilon
         self.epsilon_decay = epsilon_decay
         self.epsilon_min = epsilon_min
+        self.strategy = strategy
         
         # 🤖 THE Q-TABLE: Robot's memory!
         # It's a big table with zeros at first.
@@ -191,25 +194,32 @@ class QLearningAgent:
             # Game over! No future rewards to consider
             future_value = 0
         else:
-            # Look at all possible moves from the next position
-            # Pick the best one (highest Q-value)
-            best_action_next = int(np.argmax(self.q_table[next_state]))
-            future_value = self.q_table[next_state, best_action_next]
-            
-            # Check if the best action from next_state is the reverse of the action we just took
-            # This prevents the agent from learning oscillatory behavior (going back and forth)
-            # UP (0) <-> DOWN (1) are reverses, LEFT (2) <-> RIGHT (3) are reverses
-            reverse_actions = {
-                0: 1,  # UP <-> DOWN
-                1: 0,  # DOWN <-> UP
-                2: 3,  # LEFT <-> RIGHT
-                3: 2,  # RIGHT <-> LEFT
-            }
-            
-            # If the best action from next_state would take us back to where we came from,
-            # ignore the future value to prevent oscillating
-            if reverse_actions.get(action) == best_action_next:
-                future_value = 0
+            # Choose future value based on learning strategy
+            if self.strategy == 'sarsa':
+                # 🎯 SARSA: Use the action actually taken from next_state (on-policy)
+                # This makes SARSA more conservative - it learns the actual policy including exploration
+                action_next, _ = self.choose_action(next_state, training=True)
+                future_value = self.q_table[next_state, action_next]
+            else:
+                # 🎯 Q-LEARNING: Use the best action from next_state (off-policy)
+                # This makes Q-learning more aggressive - it always learns the optimal path
+                best_action_next = int(np.argmax(self.q_table[next_state]))
+                future_value = self.q_table[next_state, best_action_next]
+                
+                # Check if the best action from next_state is the reverse of the action we just took
+                # This prevents the agent from learning oscillatory behavior (going back and forth)
+                # UP (0) <-> DOWN (1) are reverses, LEFT (2) <-> RIGHT (3) are reverses
+                reverse_actions = {
+                    0: 1,  # UP <-> DOWN
+                    1: 0,  # DOWN <-> UP
+                    2: 3,  # LEFT <-> RIGHT
+                    3: 2,  # RIGHT <-> LEFT
+                }
+                
+                # If the best action from next_state would take us back to where we came from,
+                # ignore the future value to prevent oscillating
+                if reverse_actions.get(action) == best_action_next:
+                    future_value = 0
         
         # Step 3: The Q-learning formula!
         # This calculates how good this move REALLY was
@@ -283,6 +293,7 @@ class QLearningAgent:
             'epsilon': self.epsilon,
             'epsilon_decay': self.epsilon_decay,
             'epsilon_min': self.epsilon_min,
+            'strategy': self.strategy,
             'q_table': self.q_table.tolist(),
             'total_reward': self.total_reward,
             'episodes_completed': self.episodes_completed
@@ -309,7 +320,7 @@ class QLearningAgent:
         with open(filepath, 'r') as f:
             data = json.load(f)
         
-        # Create a new agent with the saved settings
+        # Create a new agent with the saved settings (use default 'qlearning' if not in old saves)
         agent = cls(
             n_states=data['n_states'],
             n_actions=data['n_actions'],
@@ -317,7 +328,8 @@ class QLearningAgent:
             discount_factor=data['discount_factor'],
             epsilon=data['epsilon'],
             epsilon_decay=data['epsilon_decay'],
-            epsilon_min=data['epsilon_min']
+            epsilon_min=data['epsilon_min'],
+            strategy=data.get('strategy', 'qlearning')  # Default to qlearning for backward compatibility
         )
         
         # Restore the learned Q-table
@@ -327,6 +339,7 @@ class QLearningAgent:
         
         print(f"🧠 Robot brain loaded from {filepath}!")
         print(f"   Knowledge: {agent.n_states} positions × {agent.n_actions} actions")
+        print(f"   Strategy: {agent.strategy.upper()}")
         
         return agent
     
@@ -339,6 +352,7 @@ class QLearningAgent:
         print("\n" + "=" * 50)
         print("🧠 ROBOT BRAIN SUMMARY")
         print("=" * 50)
+        print(f"Strategy: {self.strategy.upper()}")
         print(f"Memory size: {self.n_states} positions × {self.n_actions} moves")
         print(f"Average Q-value: {np.mean(self.q_table):.2f}")
         print(f"Best Q-value: {np.max(self.q_table):.2f}")

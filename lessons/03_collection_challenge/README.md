@@ -102,6 +102,51 @@ Watch your robot:
 
 **Perfect Mission**: Collect both stars (+10+10+50) + Reach goal (+100) = **170 points!**
 
+## Learning Strategies 🤖
+
+You can choose between two learning algorithms when training your robot!
+
+### Q-Learning (Default) - Off-Policy
+**How it works:** Learns the optimal policy regardless of exploration
+- Uses the **best possible action** from the next state
+- More aggressive - finds the absolute fastest path
+- Formula: `Q(s,a) = Q(s,a) + α × (r + γ × max(Q(s',a')) - Q(s,a))`
+
+**Best for:** Finding the optimal path quickly
+
+### SARSA - On-Policy  
+**How it works:** Learns the policy including exploration behavior
+- Uses the **actual action taken** from the next state
+- More conservative - avoids risky behaviors during training
+- Formula: `Q(s,a) = Q(s,a) + α × (r + γ × Q(s',a') - Q(s,a))`
+
+**Best for:** Learning safe, reliable paths
+
+### Comparison
+
+| Feature | Q-Learning | SARSA |
+|---------|-----------|-------|
+| Future value | Uses best action | Uses actual action |
+| Behavior | Aggressive | Conservative |
+| Path safety | May take risks | Safer routes |
+| Learning speed | Faster | Slower but stable |
+| Best for | Optimization | Safety |
+
+### How to Choose
+
+When you run `train_collection_robot.py`, you'll be prompted:
+```
+🎯 Choose Learning Strategy:
+  1. Q-Learning (off-policy) - Faster, more aggressive
+  2. SARSA (on-policy) - Safer, more conservative
+  Enter choice (1 or 2, default=1):
+```
+
+- **Choose Q-Learning (1)**: If you want the robot to find the absolute best path
+- **Choose SARSA (2)**: If you want the robot to avoid risky behaviors during training
+
+**Try both!** Train one robot with Q-Learning and another with SARSA, then compare their paths.
+
 ## Experiments to Try! 🔬
 
 ### Experiment 1: Change Energy Positions
